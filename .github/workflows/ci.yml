@@ -72,7 +72,7 @@ jobs:
       - check-mr-size
     if: |
       needs.checkstyle.result == 'success' &&
-      (needs.check-mr-size.result == 'success' || github.event_name != 'pull_request')
+      (needs.check-mr-size.result == 'success' || github.event_name != 'push_request')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
