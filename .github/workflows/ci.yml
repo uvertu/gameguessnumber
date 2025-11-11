@@ -70,9 +70,12 @@ jobs:
     needs: 
       - checkstyle
       - check-mr-size
+    # Если check-mr-size не запускался (при push), то игнорируем его статус
+    # Если check-mr-size запускался (при PR), то учитываем его статус
     if: |
-      needs.checkstyle.result == 'success' &&
-      (needs.check-mr-size.result == 'success' || github.event_name != 'push_request')
+      always() &&
+      (needs.checkstyle.result == 'success') &&
+      (needs.check-mr-size.result == 'success' || needs.check-mr-size.result == 'skipped')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
