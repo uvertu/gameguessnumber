@@ -6,6 +6,7 @@
 <module name="Checker">
     <property name="charset" value="UTF-8"/>
     
+    <!-- Проверка отступов -->
     <module name="FileTabCharacter">
         <property name="eachLine" value="true"/>
     </module>
