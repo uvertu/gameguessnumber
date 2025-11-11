@@ -70,8 +70,6 @@ jobs:
     needs: 
       - checkstyle
       - check-mr-size
-    # Если check-mr-size не запускался (при push), то игнорируем его статус
-    # Если check-mr-size запускался (при PR), то учитываем его статус
     if: |
       always() &&
       (needs.checkstyle.result == 'success') &&
@@ -101,14 +99,16 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+      - build
     steps:
       - name: Run tests
         run: echo "Выполняется прогон тестов проекта..."
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: 
+      - build
     steps:
       - name: Publish build
         run: echo "Публикация сборки проекта..."
