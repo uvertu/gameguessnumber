@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="CENTER" spacing="15.0" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.game.gameguessnumber.GameController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+    </padding>
+
+    <Label text="Угадай число от 1 до 100" textAlignment="CENTER">
+        <font>
+            <Font size="20.0" />
+        </font>
+    </Label>
+
+    <Label fx:id="messageLabel" text="Введите вашу догадку:"
+           textAlignment="CENTER" wrapText="true"/>
+
+    <TextField fx:id="guessField" promptText="Число от 1 до 100"
+               prefWidth="150" prefHeight="35"/>
+
+    <Button text="Проверить" onAction="#onCheckButtonClick"
+            prefWidth="100" prefHeight="30"/>
+
+    <Button text="В главное меню" onAction="#onBackToMenuClick"
+            prefWidth="120" prefHeight="30"/>
+</VBox>
