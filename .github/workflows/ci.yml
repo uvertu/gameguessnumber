@@ -110,7 +110,7 @@ jobs:
     needs: build
     if: |
       always() &&
-      needs.build.result == 'success'
+      needs.build.result == 'success' &&
       github.ref == 'refs/heads/main'
     steps:
       - name: Publish build
