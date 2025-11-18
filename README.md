@@ -1,5 +1,5 @@
 1. Код не прошел checkstyle - https://github.com/uvertu/gameguessnumber/actions/runs/19274561136
-2. Код прошел checkstyle - https://github.com/uvertu/gameguessnumber/actions/runs/19275301794https://github.com/uvertu/gameguessnumber/tree/develop
+2. Код прошел checkstyle - https://github.com/uvertu/gameguessnumber/actions/runs/19275301794
 3. MR больше 300 строк, stage падает - https://github.com/uvertu/gameguessnumber/actions/runs/19275840760
 4. MR меньше 300 строк, stage проходит - https://github.com/uvertu/gameguessnumber/actions/runs/19275908268
 
