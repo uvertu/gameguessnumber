@@ -6,6 +6,8 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.HBox?>
 
 <VBox alignment="CENTER" spacing="15.0" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.game.gameguessnumber.GameController">
@@ -18,16 +20,27 @@
             <Font size="20.0" />
         </font>
     </Label>
-
-    <Label fx:id="messageLabel" text="Введите вашу догадку:"
+    
+    <Label fx:id="messageLabel" text="Введите вашу догадку:" 
            textAlignment="CENTER" wrapText="true"/>
-
-    <TextField fx:id="guessField" promptText="Число от 1 до 100"
-               prefWidth="150" prefHeight="35"/>
-
-    <Button text="Проверить" onAction="#onCheckButtonClick"
-            prefWidth="100" prefHeight="30"/>
-
-    <Button text="В главное меню" onAction="#onBackToMenuClick"
-            prefWidth="120" prefHeight="30"/>
+           
+    <HBox alignment="CENTER" spacing="10.0">
+        <TextField fx:id="guessField" promptText="Число от 1 до 100" 
+                   prefWidth="150" prefHeight="35"/>
+        <Button text="Проверить" onAction="#onCheckButtonClick" 
+                prefWidth="100" prefHeight="35"/>
+    </HBox>
+    
+    <Label fx:id="attemptsLabel" text="Попытки: 0" 
+           textAlignment="CENTER" style="-fx-text-fill: #666;"/>
+    
+    <Label text="История попыток:" style="-fx-text-fill: #444;"/>
+    <ListView fx:id="historyListView" prefWidth="250" prefHeight="150"/>
+    
+    <HBox alignment="CENTER" spacing="10.0">
+        <Button text="Новая игра" onAction="#onNewGameClick" 
+                prefWidth="120" prefHeight="30" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Button text="В главное меню" onAction="#onBackToMenuClick" 
+                prefWidth="120" prefHeight="30"/>
+    </HBox>
 </VBox>
