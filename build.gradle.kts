@@ -39,8 +39,8 @@ tasks.withType<JavaCompile> {
 }
 
 application {
-    mainModule.set("com.game.guessthenumber")
-    mainClass.set("com.game.guessthenumber.HelloApplication")
+    mainModule.set("com.game.gameguessnumber")
+    mainClass.set("com.game.gameguessnumber.HelloApplication")
 }
 
 javafx {
@@ -49,9 +49,8 @@ javafx {
 }
 
 dependencies {
-    implementation("org.controlsfx:controlsfx:11.2.1")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
 
 tasks.withType<Test> {
