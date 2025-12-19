@@ -51,7 +51,7 @@ public class GameLogicTest {
         String result = game.checkGuess(42);
 
         // Проверка
-        assertEquals("Поздравляем! Вы угадали число 42 за 5 попыток!", result);
+        assertEquals("Поздравляем! Вы угадали число 42 за 1 попыток!", result);
         assertEquals(1, game.getAttempts());
     }
 }
