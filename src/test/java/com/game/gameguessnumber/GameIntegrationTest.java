@@ -84,4 +84,29 @@ public class GameIntegrationTest {
         assertTrue(session.isGameWon());
         assertEquals(3, session.getAttempts());
     }
+
+    @Test
+    void testGameWithMultipleWrongGuesses() {
+        session.startNewGame(77);
+
+        int[] guesses = {50, 60, 70, 80, 90, 77};
+        int expectedAttempts = 0;
+
+        for (int guess : guesses) {
+            expectedAttempts++;
+            GameResult result = session.makeGuess(guess);
+
+            if (guess == 77) {
+                assertTrue(result.success);
+                assertEquals(expectedAttempts, result.attempts);
+            } else {
+                assertFalse(result.success);
+                assertEquals(expectedAttempts, result.attempts);
+            }
+        }
+
+        assertTrue(session.isGameWon());
+        assertEquals(6, session.getAttempts());
+    }
+
 }
