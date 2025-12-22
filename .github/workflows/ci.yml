@@ -2,6 +2,8 @@ name: Java CI
 on: 
   pull_request:
     branches: [ main, develop ]
+  push:
+    branches: [ main ]
 
 jobs:
   team-info:
@@ -61,17 +63,15 @@ jobs:
           distribution: 'temurin'
 
       - name: Run Checkstyle
-        run: ./gradlew checkstyleMain
+        run: ./gradlew :frontend:checkstyleMain :backend:checkstyleMain
 
   build:
     runs-on: ubuntu-latest
     needs: 
       - checkstyle
-      - check-mr-size
     if: |
       always() &&
-      (needs.checkstyle.result == 'success') &&
-      (needs.check-mr-size.result == 'success' || needs.check-mr-size.result == 'skipped')
+      (needs.checkstyle.result == 'success')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -85,14 +85,26 @@ jobs:
           java-version: '22'
           distribution: 'temurin'
 
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - name: Build project
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact
-          path: build/libs/
+          path: |
+            frontend/build/libs/
+            backend/build/libs/
           retention-days: 1
 
   test:
@@ -102,8 +114,48 @@ jobs:
       always() &&
       needs.build.result == 'success'
     steps:
-      - name: Run tests
-        run: echo "Выполняется прогон тестов проекта..."
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Set up JDK 22
+        uses: actions/setup-java@v4
+        with:
+          java-version: '22'
+          distribution: 'temurin'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Run all tests
+        run: ./gradlew test
+
+      - name: Run specific test classes
+        run: ./gradlew :frontend:test --tests "com.game.gameguessnumber.GameLogicTest" --tests "com.game.gameguessnumber.GameIntegrationTest" --tests "com.game.gameguessnumber.GameControllerUITest"
+
+      - name: Generate test report
+        run: ./gradlew :frontend:test :backend:test --info
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            frontend/build/reports/tests/test/
+            frontend/build/test-results/test/
+            backend/build/reports/tests/test/
+            backend/build/test-results/test/
+          retention-days: 7
 
   deploy:
     runs-on: ubuntu-latest
@@ -111,7 +163,8 @@ jobs:
     if: |
       always() &&
       needs.build.result == 'success' &&
-      github.ref == 'refs/heads/main'
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push'
     steps:
       - name: Publish build
         run: echo "Публикация сборки проекта..."
