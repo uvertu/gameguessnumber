@@ -36,6 +36,10 @@ public class GameController {
         startNewGame();
     }
 
+    public int getAttemptsForTest() {
+        return attempts;
+    }
+
     private void startNewGame() {
         targetNumber = random.nextInt(100) + 1;
         attempts = 0;
