@@ -109,4 +109,22 @@ public class GameIntegrationTest {
         assertEquals(6, session.getAttempts());
     }
 
+    @Test
+    void testNewGameResetsState() {
+        session.startNewGame(42);
+        
+        session.makeGuess(10);
+        session.makeGuess(20);
+        assertEquals(2, session.getAttempts());
+        
+        session.startNewGame(99);
+        
+        assertEquals(0, session.getAttempts());
+        assertFalse(session.isGameWon());
+        
+        GameResult result = session.makeGuess(99);
+        assertTrue(result.success);
+        assertEquals(1, session.getAttempts());
+        assertTrue(session.isGameWon());
+    }
 }
