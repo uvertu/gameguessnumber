@@ -51,4 +51,16 @@ public class GameControllerUITest {
                     "GameController должен иметь метод " + methodName);
         }
     }
+
+    @Test
+    void testMessageLogic() {
+        MessageLogic logic = new MessageLogic();
+
+        assertEquals("🎉 Поздравляем! Вы угадали число 42 за 3 попыток!",
+                logic.getVictoryMessage(42, 3));
+        assertEquals("Мое число БОЛЬШЕ чем 25",
+                logic.getHintMessage(25, "больше"));
+        assertEquals("Мое число МЕНЬШЕ чем 75",
+                logic.getHintMessage(75, "меньше"));
+    }
 }

@@ -54,4 +54,17 @@ public class GameLogicTest {
         assertEquals("Поздравляем! Вы угадали число 42 за 1 попыток!", result);
         assertEquals(1, game.getAttempts());
     }
+
+    @Test
+    void testGuessTooLow() {
+        // Подготовка
+        game.startNewGame(75);
+
+        // Действие
+        String result = game.checkGuess(50);
+
+        // Проверка
+        assertEquals("Больше", result);
+        assertEquals(1, game.getAttempts());
+    }
 }
