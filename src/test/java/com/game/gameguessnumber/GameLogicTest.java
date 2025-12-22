@@ -67,4 +67,17 @@ public class GameLogicTest {
         assertEquals("Больше", result);
         assertEquals(1, game.getAttempts());
     }
+
+    @Test
+    void testGuessTooHigh() {
+        // Подготовка
+        game.startNewGame(25);
+
+        // Действие
+        String result = game.checkGuess(50);
+
+        // Проверка
+        assertEquals("Меньше", result);
+        assertEquals(1, game.getAttempts());
+    }
 }
