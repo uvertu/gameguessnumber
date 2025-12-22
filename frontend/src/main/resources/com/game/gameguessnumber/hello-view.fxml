@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
@@ -12,15 +14,24 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label text="Угадай число" textAlignment="CENTER">
+    <Label text="%app.name" textAlignment="CENTER">
         <font>
-            <Font size="24.0" />
+            <Font size="24.0"/>
         </font>
     </Label>
 
-    <Label fx:id="welcomeText" text="Добро пожаловать в игру!"
+    <Label fx:id="welcomeText" text="%menu.welcome"
            textAlignment="CENTER" wrapText="true"/>
 
-    <Button text="Начать игру" onAction="#onStartGameButtonClick"
-            prefWidth="120" prefHeight="40"/>
+    <HBox alignment="CENTER" spacing="10.0">
+        <Label text="%menu.language"/>
+        <ChoiceBox fx:id="languageChoice" prefWidth="140"/>
+    </HBox>
+
+    <VBox spacing="10.0" alignment="CENTER">
+        <Button text="%menu.start" onAction="#onStartGameButtonClick"
+                prefWidth="180" prefHeight="40"/>
+        <Button text="%menu.leaderboard" onAction="#onLeaderboardButtonClick"
+                prefWidth="180" prefHeight="40"/>
+    </VBox>
 </VBox>

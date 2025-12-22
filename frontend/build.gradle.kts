@@ -7,14 +7,9 @@ plugins {
     checkstyle
 }
 
-group = "com.game"
-version = "1.0-SNAPSHOT"
-
 repositories {
     mavenCentral()
 }
-
-val junitVersion = "5.12.1"
 
 checkstyle {
     toolVersion = "10.12.4"
@@ -30,17 +25,14 @@ tasks.withType<Checkstyle>().configureEach {
 
 java {
     toolchain {
+        // Keep Java 22 as in the original project/CI.
         languageVersion = JavaLanguageVersion.of(22)
     }
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
-
 application {
     mainModule.set("com.game.gameguessnumber")
-    mainClass.set("com.game.gameguessnumber.HelloApplication")
+    mainClass.set("com.game.gameguessnumber.Launcher")
 }
 
 javafx {
@@ -49,8 +41,11 @@ javafx {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    // JSON for calling the backend API
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.1")
 }
 
 tasks.withType<Test> {

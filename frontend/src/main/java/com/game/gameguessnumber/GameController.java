@@ -1,20 +1,27 @@
 package com.game.gameguessnumber;
 
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ListView;
-import javafx.stage.Stage;
+import com.game.gameguessnumber.api.BackendClient;
+import com.game.gameguessnumber.api.dto.GuessResponse;
+import com.game.gameguessnumber.api.dto.GuessStatus;
+import com.game.gameguessnumber.i18n.I18n;
+import com.game.gameguessnumber.navigation.SceneNavigator;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Random;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
+import java.util.UUID;
 
 public class GameController {
+    @FXML
+    private Label headerLabel;
     @FXML
     private Label messageLabel;
     @FXML
@@ -24,80 +31,128 @@ public class GameController {
     @FXML
     private ListView<String> historyListView;
 
-    private int targetNumber;
-    private int attempts;
-    private Random random;
+    private final BackendClient backendClient = new BackendClient();
+
+    private UUID gameId;
+    private int minNumber;
+    private int maxNumber;
+
     private ObservableList<String> attemptHistory;
 
     public void initialize() {
-        random = new Random();
         attemptHistory = FXCollections.observableArrayList();
         historyListView.setItems(attemptHistory);
         startNewGame();
     }
 
     public int getAttemptsForTest() {
-        return attempts;
+        // Keeps compatibility with the existing tests, now based on the size of history.
+        return attemptHistory.size();
     }
 
     private void startNewGame() {
-        targetNumber = random.nextInt(100) + 1;
-        attempts = 0;
+        setLoadingState(true);
         attemptHistory.clear();
-        updateAttemptsLabel();
-        messageLabel.setText("Я загадал число от 1 до 100. Попробуйте угадать!");
-        guessField.setText("");
-        guessField.setStyle("");
-        guessField.setDisable(false);
+
+        backendClient.startGame(I18n.getLocale())
+                .thenAccept(resp -> Platform.runLater(() -> {
+                    gameId = resp.gameId();
+                    minNumber = resp.min();
+                    maxNumber = resp.max();
+
+                    applyLocalizedTexts();
+
+                    messageLabel.setText(resp.message());
+                    attemptsLabel.setText(format("game.attempts", 0));
+
+                    guessField.setText("");
+                    guessField.setStyle("");
+                    guessField.setDisable(false);
+                    guessField.requestFocus();
+
+                    setLoadingState(false);
+                }))
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> {
+                        messageLabel.setText(format("error.backendUnavailable"));
+                        attemptsLabel.setText("");
+                        guessField.setDisable(true);
+                        setLoadingState(false);
+                    });
+                    return null;
+                });
     }
 
-    private void updateAttemptsLabel() {
-        attemptsLabel.setText("Попытки: " + attempts);
+    private void applyLocalizedTexts() {
+        ResourceBundle bundle = I18n.getBundle();
+        headerLabel.setText(MessageFormat.format(bundle.getString("game.header"), minNumber, maxNumber));
+        guessField.setPromptText(MessageFormat.format(bundle.getString("game.prompt"), minNumber, maxNumber));
     }
 
-    private void addToHistory(int guess, String result) {
-        String historyEntry = "Попытка " + attempts + ": " + guess + " - " + result;
-        attemptHistory.add(0, historyEntry); // Добавляем в начало списка
+    private void setLoadingState(boolean isLoading) {
+        guessField.setDisable(isLoading);
     }
 
     @FXML
     protected void onCheckButtonClick() {
         String inputText = guessField.getText();
-        
+
+        int userGuess;
         try {
-            int userGuess = Integer.parseInt(inputText);
-            attempts++;
-            updateAttemptsLabel();
-            
-            if (userGuess < 1 || userGuess > 100) {
-                messageLabel.setText("Пожалуйста, введите число от 1 до 100!");
-                guessField.setStyle("-fx-border-color: #ff4444;");
-                return;
-            }
-            
-            if (userGuess == targetNumber) {
-                String victoryText = "🎉 Поздравляем! Вы угадали число " + targetNumber + " за " + attempts + " попыток!";
-                messageLabel.setText(victoryText);
-                guessField.setStyle("-fx-border-color: #44ff44; -fx-background-color: #e8f5e8;");
-                addToHistory(userGuess, "УГАДАЛИ! 🎉");
-                guessField.setDisable(true);
-            } else if (userGuess < targetNumber) {
-                messageLabel.setText("Мое число БОЛЬШЕ чем " + userGuess);
-                guessField.setStyle("");
-                addToHistory(userGuess, "Больше ⬆️");
-            } else {
-                messageLabel.setText("Мое число МЕНЬШЕ чем " + userGuess);
-                guessField.setStyle("");
-                addToHistory(userGuess, "Меньше ⬇️");
-            }
-            
-            guessField.setText("");
-            guessField.requestFocus();
-            
+            userGuess = Integer.parseInt(inputText);
         } catch (NumberFormatException e) {
-            messageLabel.setText("Пожалуйста, введите корректное число!");
+            messageLabel.setText(format("error.invalidNumber"));
             guessField.setStyle("-fx-border-color: #ff4444;");
+            return;
         }
+
+        setLoadingState(true);
+
+        backendClient.makeGuess(gameId, userGuess, I18n.getLocale())
+                .thenAccept(resp -> Platform.runLater(() -> {
+                    renderGuessResult(userGuess, resp);
+                    guessField.setText("");
+                    guessField.requestFocus();
+                    setLoadingState(false);
+                }))
+                .exceptionally(ex -> {
+                    Platform.runLater(() -> {
+                        messageLabel.setText(format("error.backendUnavailable"));
+                        setLoadingState(false);
+                    });
+                    return null;
+                });
+    }
+
+    private void renderGuessResult(int userGuess, GuessResponse resp) {
+        messageLabel.setText(resp.message());
+        attemptsLabel.setText(format("game.attempts", resp.attempts()));
+
+        addToHistory(resp.attempts(), userGuess, resp);
+
+        if (resp.status() == GuessStatus.CORRECT) {
+            guessField.setStyle("-fx-border-color: #44ff44; -fx-background-color: #e8f5e8;");
+            guessField.setDisable(true);
+        } else if (resp.status() == GuessStatus.OUT_OF_RANGE) {
+            guessField.setStyle("-fx-border-color: #ff4444;");
+        } else {
+            guessField.setStyle("");
+        }
+    }
+
+    private void addToHistory(int attempt, int guess, GuessResponse resp) {
+        String entry = "#" + attempt + ": " + guess + " — " + toCompactStatus(resp);
+        attemptHistory.add(0, entry);
+    }
+
+    private static String toCompactStatus(GuessResponse resp) {
+        return switch (resp.status()) {
+            case TOO_LOW -> "⬆️";
+            case TOO_HIGH -> "⬇️";
+            case OUT_OF_RANGE -> "⚠️";
+            case CORRECT -> "🎉";
+            case GAME_NOT_FOUND, GAME_ALREADY_FINISHED -> "⛔";
+        } + " " + resp.message();
     }
 
     @FXML
@@ -108,12 +163,19 @@ public class GameController {
     @FXML
     protected void onBackToMenuClick() {
         try {
-            Parent menuRoot = FXMLLoader.load(getClass().getResource("hello-view.fxml"));
             Stage stage = (Stage) messageLabel.getScene().getWindow();
-            stage.setScene(new Scene(menuRoot, 400, 300));
-            stage.setTitle("Угадай число - Главное меню");
+            SceneNavigator.setScene(stage, "/com/game/gameguessnumber/hello-view.fxml", "title.mainMenu", 400, 300);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String format(String key, Object... args) {
+        ResourceBundle bundle = I18n.getBundle();
+        if (!bundle.containsKey(key)) {
+            // Fallback for keys not present in the frontend bundle.
+            return key;
+        }
+        return MessageFormat.format(bundle.getString(key), args);
     }
 }
