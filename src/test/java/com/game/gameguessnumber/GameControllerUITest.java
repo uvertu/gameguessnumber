@@ -63,4 +63,19 @@ public class GameControllerUITest {
         assertEquals("Мое число МЕНЬШЕ чем 75",
                 logic.getHintMessage(75, "меньше"));
     }
+
+    @Test
+    void testInputValidation() {
+        InputValidator validator = new InputValidator();
+
+        assertTrue(validator.isValidNumber("42"));
+        assertTrue(validator.isValidNumber("1"));
+        assertTrue(validator.isValidNumber("100"));
+
+        assertFalse(validator.isValidNumber("0"));
+        assertFalse(validator.isValidNumber("101"));
+        assertFalse(validator.isValidNumber("abc"));
+        assertFalse(validator.isValidNumber(""));
+        assertFalse(validator.isValidNumber("42.5"));
+    }
 }
